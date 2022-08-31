@@ -7,17 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10' ]
+        include:
+          - { name: '3.10', python: '3.10', os: ubuntu-latest, tox: py10 }
+          - { name: '3.9', python: '3.9', os: ubuntu-latest, tox: py39 }
+          - { name: '3.8', python: '3.8', os: ubuntu-latest, tox: py38 }
+          - { name: '3.7', python: '3.7', os: ubuntu-latest, tox: py37 }
+          - { name: 'typing', python: '3.10', os: ubuntu-latest, tox: typing }
+          - { name: 'style', python: '3.10', os: ubuntu-latest, tox: style }
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python }}
       - name: Install dependencies
         run: |
           pip install -U wheel setuptools pip tox
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Run tests
-        run: tox
+        run: tox -e ${{ matrix.tox }}

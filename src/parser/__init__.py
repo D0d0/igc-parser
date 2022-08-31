@@ -4,11 +4,11 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-from enums import ARecord
-from enums import Flight
-from regexes import RE_A
-from regexes import RE_A_1
-from regexes import RE_B
+from .enums import ARecord
+from .enums import Flight
+from .regexes import RE_A
+from .regexes import RE_A_1
+from .regexes import RE_B
 
 
 class IgcParser:

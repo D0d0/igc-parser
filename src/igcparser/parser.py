@@ -1,3 +1,4 @@
+import datetime
 import re
 from pathlib import Path
 from typing import List
@@ -5,6 +6,7 @@ from typing import Optional
 from typing import Union
 
 from .enums import ARecord
+from .enums import BRecord
 from .enums import Flight
 from .regexes import RE_A
 from .regexes import RE_A_1
@@ -44,9 +46,36 @@ class IgcParser:
         return Flight
 
     @staticmethod
-    def _parse_b_record(line: str):
+    def _parse_b_record(line: str) -> Optional[BRecord]:
         if match := re.match(RE_B, line, flags=re.IGNORECASE):
-            return match
+            latitude_degrees: float = (
+                int(match.group(4))
+                + (int(match.group(5)) + int(match.group(6)) / 100) / 60
+            )
+            longitude_degrees: float = (
+                int(match.group(8))
+                + (int(match.group(9)) + int(match.group(10)) / 100) / 60
+            )
+            return BRecord(
+                time=datetime.time(
+                    hour=int(match.group(1)),
+                    minute=int(match.group(2)),
+                    second=int(match.group(3)),
+                ),
+                latitude=-latitude_degrees
+                if match.group(7) == "S"
+                else latitude_degrees,
+                longitude=-longitude_degrees
+                if match.group(11) == "W"
+                else longitude_degrees,
+                valid=match.group(12) == "A",
+                pressure_altitude=None
+                if match.group(13) == "0000"
+                else int(match.group(13)),
+                gps_altitude=None
+                if match.group(14) == "0000"
+                else int(match.group(14)),
+            )
 
     @staticmethod
     def _parse_a_record(line: str) -> Optional[ARecord]:

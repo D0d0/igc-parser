@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 from typing import List
 from typing import Optional
@@ -10,24 +11,20 @@ class RecordExtensions:
 
 @dataclass
 class BRecord:
-    # Unix timestamp of the GPS fix in milliseconds
-    timestamp: int
-
     # UTC time of the GPS fix in ISO 8601 format
-    time: str
+    time: datetime.time
 
-    latitude: int
-    longitude: int
+    latitude: float
+    longitude: float
     valid: bool
-    pressureAltitude: Optional[int]
-    gpsAltitude: Optional[int]
+    pressure_altitude: Optional[int] = None
+    gps_altitude: Optional[int] = None
 
-    extensions: RecordExtensions
+    extensions: Optional[RecordExtensions] = None
 
-    fixAccuracy: Optional[int]
+    fix_accuracy: Optional[int] = None
 
-    # Engine Noise Level from 0.0 to 1.0
-    enl: Optional[float]
+    enl: Optional[float] = None
 
 
 @dataclass

@@ -1,7 +1,7 @@
 import unittest
 
-from src.parser import ARecord
-from src.parser import IgcParser
+from igcparser import ARecord
+from igcparser import IgcParser
 
 
 class ParserMethodCase(unittest.TestCase):

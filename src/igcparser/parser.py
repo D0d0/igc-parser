@@ -19,12 +19,14 @@ class IgcParser:
     @staticmethod
     def parse(file_path: Union[str, Path]) -> Flight:
         if isinstance(file_path, str):
-            file_path: Path = Path(file_path)
+            path: Path = Path(file_path)
+        else:
+            path = file_path
 
-        if not file_path.exists():
+        if not path.exists():
             raise Exception("Path does not exist.")
 
-        with open(file_path) as f:
+        with open(path) as f:
             return IgcParser._parse_lines([line.strip() for line in f.readlines()])
 
     @staticmethod
@@ -45,7 +47,7 @@ class IgcParser:
             if line.startswith("J"):
                 print(IgcParser._parse_ij_record(line))
 
-        return Flight
+        return Flight()
 
     @staticmethod
     def _parse_b_record(line: str) -> Optional[BRecord]:
@@ -65,6 +67,8 @@ class IgcParser:
                 gps_altitude=None if match.group(14) == "0000" else int(match.group(14)),
             )
 
+        return None
+
     @staticmethod
     def _parse_a_record(line: str) -> Optional[ARecord]:
         if match := re.match(RE_A, line, flags=re.IGNORECASE):
@@ -82,6 +86,8 @@ class IgcParser:
                 num_flight=None,
                 additional_data=match.group(2) or None,
             )
+
+        return None
 
     @staticmethod
     def _parse_ij_record(line: str) -> List[RecordExtension]:

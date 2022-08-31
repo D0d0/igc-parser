@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        -include:
-          - {python-version: '3.8', tox: py38}
-          - {python-version: '3.9', tox: py39}
-          - {python-version: '3.10', tox: py310}
+        include:
+          - { python-version: '3.8', tox: py38 }
+          - { python-version: '3.9', tox: py39 }
+          - { python-version: '3.10', tox: py310 }
 
     steps:
       - uses: actions/checkout@v3
@@ -27,5 +27,4 @@ jobs:
           pip install tox
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with tox ${{ matrix.tox }}
-        run: |
-          tox -e ${{ matrix.tox }}
+        run: tox -e ${{ matrix.tox }}

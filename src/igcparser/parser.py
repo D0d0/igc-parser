@@ -18,10 +18,7 @@ from .regexes import RE_IJ
 class IgcParser:
     @staticmethod
     def parse(file_path: Union[str, Path]) -> Flight:
-        if isinstance(file_path, str):
-            path: Path = Path(file_path)
-        else:
-            path = file_path
+        path: Path = Path(file_path)
 
         if not path.exists():
             raise Exception("Path does not exist.")

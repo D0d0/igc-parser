@@ -5,8 +5,10 @@ from typing import Optional
 
 
 @dataclass
-class RecordExtensions:
-    code: List[str]
+class RecordExtension:
+    code: str
+    start: int
+    length: int
 
 
 @dataclass
@@ -20,7 +22,7 @@ class BRecord:
     pressure_altitude: Optional[int] = None
     gps_altitude: Optional[int] = None
 
-    extensions: Optional[RecordExtensions] = None
+    extensions: Optional[RecordExtension] = None
 
     fix_accuracy: Optional[int] = None
 

@@ -8,9 +8,11 @@ from typing import Union
 from .enums import ARecord
 from .enums import BRecord
 from .enums import Flight
+from .enums import RecordExtension
 from .regexes import RE_A
 from .regexes import RE_A_1
 from .regexes import RE_B
+from .regexes import RE_IJ
 
 
 class IgcParser:
@@ -41,7 +43,7 @@ class IgcParser:
                 pass
 
             if line.startswith("J"):
-                pass
+                print(IgcParser._parse_ij_record(line))
 
         return Flight
 
@@ -80,3 +82,23 @@ class IgcParser:
                 num_flight=None,
                 additional_data=match.group(2) or None,
             )
+
+    @staticmethod
+    def _parse_ij_record(line: str) -> List[RecordExtension]:
+        result: List[RecordExtension] = []
+        if match := re.match(RE_IJ, line, flags=re.IGNORECASE):
+            num: int = int(match.group(1))
+            if len(line) < 3 + num * 7:
+                raise Exception
+
+            for i in range(num):
+                offset: int = 3 + i * 7
+                result.append(
+                    RecordExtension(
+                        start=int(line[offset : offset + 2]) - 1,
+                        length=int(line[offset + 2 : offset + 4]) - 1,
+                        code=line[offset + 4 : offset + 7],
+                    )
+                )
+
+        return result

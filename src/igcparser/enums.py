@@ -38,6 +38,12 @@ class ARecord:
 
 
 @dataclass
+class KRecord:
+    time: datetime.time
+    code: List[str]
+
+
+@dataclass
 class TaskPoint:
     latitude: int
     longitude: int

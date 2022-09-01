@@ -8,11 +8,13 @@ from typing import Union
 from .enums import ARecord
 from .enums import BRecord
 from .enums import Flight
+from .enums import KRecord
 from .enums import RecordExtension
 from .regexes import RE_A
 from .regexes import RE_A_1
 from .regexes import RE_B
 from .regexes import RE_IJ
+from .regexes import RE_K
 
 
 class IgcParser:
@@ -29,19 +31,19 @@ class IgcParser:
     @staticmethod
     def _parse_lines(lines: List[str]) -> Flight:
         for line in lines:
+            if line.startswith("H"):
+                IgcParser._parse_header(line)
+
             if line.startswith("A"):
-                pass
+                IgcParser._parse_a_record(line)
 
             if line.startswith("B"):
-                pass
+                IgcParser._parse_b_record(line)
 
             if line.startswith("H"):
                 pass
 
-            if line.startswith("I"):
-                pass
-
-            if line.startswith("J"):
+            if line.startswith("I") or line.startswith("J"):
                 print(IgcParser._parse_ij_record(line))
 
         return Flight()
@@ -105,3 +107,18 @@ class IgcParser:
                 )
 
         return result
+
+    @staticmethod
+    def parse_k_record(line: str) -> KRecord:
+        if match := re.match(RE_K, line, flags=re.IGNORECASE):
+            return KRecord(
+                time=datetime.time(
+                    hour=int(match.group(1)),
+                    minute=int(match.group(2)),
+                    second=int(match.group(3)),
+                )
+            )
+
+    @staticmethod
+    def _parse_header(line: str):
+        pass

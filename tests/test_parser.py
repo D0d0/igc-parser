@@ -15,14 +15,14 @@ class ParserMethodCase(unittest.TestCase):
         line = "ALXV4YT,FLIGHT:1"
         record: ARecord = IgcParser._parse_a_record(line)
         self.assertEqual(record.num_flight, 1)
-        self.assertEqual(record.manufacturer, "LXV")
+        self.assertEqual(record.logger_manufacturer, "LXV")
         self.assertEqual(record.logger_id, "4YT")
         self.assertIsNone(record.additional_data)
 
         line = "AFLA2NF"
         record: ARecord = IgcParser._parse_a_record(line)
         self.assertIsNone(record.num_flight)
-        self.assertEqual(record.manufacturer, "FLA")
+        self.assertEqual(record.logger_manufacturer, "FLA")
         self.assertEqual(record.logger_id, "2NF")
         self.assertIsNone(record.additional_data)
 

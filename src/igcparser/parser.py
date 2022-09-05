@@ -41,14 +41,16 @@ class IgcParser:
         fix_extension: List[RecordExtension] = []
 
         for line in lines:
+            if line.startswith("A"):
+                a_record: ARecord = IgcParser._parse_a_record(line)
+                flight.logger_id = a_record.logger_id
+                flight.logger_manufacturer = a_record.logger_manufacturer
+
             if line.startswith("C"):
                 IgcParser._parse_task_line(line, flight)
 
             if line.startswith("H"):
                 IgcParser._parse_header(line)
-
-            if line.startswith("A"):
-                IgcParser._parse_a_record(line)
 
             if line.startswith("B"):
                 flight.fixes.append(IgcParser._parse_b_record(line, fix_extension))
@@ -99,10 +101,10 @@ class IgcParser:
         raise Exception(f"Invalid B record at line: {line}")
 
     @staticmethod
-    def _parse_a_record(line: str) -> Optional[ARecord]:
+    def _parse_a_record(line: str) -> ARecord:
         if match := re.match(RE_A, line, flags=re.IGNORECASE):
             return ARecord(
-                manufacturer=match.group(1),
+                logger_manufacturer=match.group(1),
                 logger_id=match.group(2),
                 num_flight=int(match.group(3)) if match.group(3) else None,
                 additional_data=match.group(4) or None,
@@ -110,13 +112,13 @@ class IgcParser:
 
         if match := re.match(RE_A_1, line, flags=re.IGNORECASE):
             return ARecord(
-                manufacturer=match.group(1),
+                logger_manufacturer=match.group(1),
                 logger_id=None,
                 num_flight=None,
                 additional_data=match.group(2) or None,
             )
 
-        return None
+        raise Exception(f"Failed to parse ARecord: {line}")
 
     @staticmethod
     def _parse_ij_record(line: str) -> List[RecordExtension]:
@@ -198,9 +200,9 @@ class IgcParser:
                         hour=int(match.group(4)), minute=int(match.group(5)), second=int(match.group(6))
                     ),
                     flight_date=flight_date,
-                    task_number=int(match[10]) if match[10] != "0000" else None,
-                    num_turnpoints=int(match[11]),
-                    comment=match[12] or None,
+                    task_number=int(match.group(10)) if match.group(10) != "0000" else None,
+                    num_turnpoints=int(match.group(11)),
+                    comment=match.group(12) or None,
                 )
 
             raise Exception(f"Failed to parse header task line: {line}")

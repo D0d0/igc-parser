@@ -32,7 +32,7 @@ class BRecord:
 
 @dataclass
 class ARecord:
-    manufacturer: str
+    logger_manufacturer: str
     logger_id: Optional[str]
     num_flight: Optional[int]
     additional_data: Optional[str]
@@ -67,5 +67,7 @@ class Task:
 
 @dataclass
 class Flight:
+    logger_manufacturer: str
+    logger_id: Optional[str]
     task: Optional[Task] = None
     fixes: List[BRecord] = field(default_factory=list)

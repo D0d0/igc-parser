@@ -66,7 +66,7 @@ class IgcParser:
                 data_extensions = IgcParser._parse_ij_record(line)
 
             if line.startswith("K"):
-                flight.data_records.append(IgcParser.parse_k_record(line, data_extensions))
+                flight.data_records.append(IgcParser._parse_k_record(line, data_extensions))
 
         return flight
 
@@ -145,7 +145,7 @@ class IgcParser:
         return result
 
     @staticmethod
-    def parse_k_record(line: str, data_extensions: List[RecordExtension]) -> KRecord:
+    def _parse_k_record(line: str, data_extensions: List[RecordExtension]) -> KRecord:
         if match := re.match(RE_K, line, flags=re.IGNORECASE):
             return KRecord(
                 time=datetime.time(

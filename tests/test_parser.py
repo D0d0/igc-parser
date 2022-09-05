@@ -5,6 +5,7 @@ from typing import List
 from igcparser import ARecord
 from igcparser import IgcParser
 from igcparser.enums import BRecord
+from igcparser.enums import Flight
 from igcparser.enums import RecordExtension
 
 
@@ -51,3 +52,15 @@ class ParserMethodCase(unittest.TestCase):
         self.assertEqual(record_extensions[1].start, 10)
         self.assertEqual(record_extensions[0].length, 9)
         self.assertEqual(record_extensions[1].length, 14)
+
+    def test_task_line_parser(self):
+        line: str = "C030922095226030922000102"
+        flight: Flight = Flight()
+        IgcParser._parse_task_line(line, flight)
+        self.assertIsNotNone(flight.task)
+        self.assertEqual(flight.task.declaration_date, datetime.date(year=2022, month=9, day=3))
+        self.assertEqual(flight.task.flight_date, datetime.date(year=2022, month=9, day=3))
+        self.assertEqual(flight.task.declaration_time, datetime.time(hour=9, minute=52, second=26))
+        self.assertEqual(flight.task.num_turnpoints, 2)
+        self.assertEqual(flight.task.points, [])
+        self.assertEqual(flight.task.comment, None)

@@ -11,12 +11,14 @@ from .enums import BRecord
 from .enums import Flight
 from .enums import KRecord
 from .enums import RecordExtension
+from .enums import Task
 from .regexes import RE_A
 from .regexes import RE_A_1
 from .regexes import RE_B
 from .regexes import RE_HFDTE
 from .regexes import RE_IJ
 from .regexes import RE_K
+from .regexes import RE_TASK
 
 
 class IgcParser:
@@ -36,7 +38,7 @@ class IgcParser:
 
         for line in lines:
             if line.startswith("C"):
-                IgcParser._parse_task_line(line)
+                IgcParser._parse_task_line(line, flight)
 
             if line.startswith("H"):
                 IgcParser._parse_header(line)
@@ -148,5 +150,32 @@ class IgcParser:
         pass
 
     @staticmethod
-    def _parse_task_line(line):
-        pass
+    def _parse_task_line(line: str, flight: Flight) -> None:
+        def _parse_task() -> Task:
+            century: str = "19" if match[3][0] in ("8", "9") else "20"
+
+            flight_date: Optional[datetime.date] = None
+            if match[7] != "00" or match[8] != "00" or match[9] != "00":
+                flight_date = datetime.date(
+                    year=int(("19" if match[9][0] in ("8", "9") else "20") + match[9]),
+                    month=int(match[8]),
+                    day=int(match[7]),
+                )
+
+            return Task(
+                declaration_date=datetime.date(year=int(century + match[3]), month=int(match[2]), day=int(match[1])),
+                declaration_time=datetime.time(hour=int(match[4]), minute=int(match[5]), second=int(match[6])),
+                flight_date=flight_date,
+                task_number=int(match[10]) if match[10] != "0000" else None,
+                num_turnpoints=int(match[11]),
+                comment=match[12] or None,
+            )
+
+        def _parse_task_line():
+            pass
+
+        if flight.task is None:
+            if match := re.match(RE_TASK, line, flags=re.IGNORECASE):
+                flight.task = _parse_task()
+        else:
+            pass

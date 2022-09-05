@@ -53,19 +53,19 @@ class TaskPoint:
 
 @dataclass
 class Task:
-    declaration_date: str
-    declaration_time: str
-    declaration_timestamp: int
+    declaration_date: datetime.date
+    declaration_time: datetime.time
 
-    flight_date: str
-    task_number: int
+    flight_date: datetime.date
 
     num_turnpoints: int
-    comment: str
+    comment: Optional[str]
 
-    points: List[TaskPoint]
+    task_number: Optional[int]
+    points: List[TaskPoint] = field(default_factory=list)
 
 
 @dataclass
 class Flight:
+    task: Optional[Task] = None
     fixes: List[BRecord] = field(default_factory=list)

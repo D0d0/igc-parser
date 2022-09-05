@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Union
 
 from .enums import ARecord
@@ -13,6 +14,7 @@ from .enums import RecordExtension
 from .regexes import RE_A
 from .regexes import RE_A_1
 from .regexes import RE_B
+from .regexes import RE_HFDTE
 from .regexes import RE_IJ
 from .regexes import RE_K
 
@@ -30,7 +32,12 @@ class IgcParser:
 
     @staticmethod
     def _parse_lines(lines: List[str]) -> Flight:
+        flight: Flight = Flight()
+
         for line in lines:
+            if line.startswith("C"):
+                IgcParser._parse_task_line(line)
+
             if line.startswith("H"):
                 IgcParser._parse_header(line)
 
@@ -38,7 +45,7 @@ class IgcParser:
                 IgcParser._parse_a_record(line)
 
             if line.startswith("B"):
-                IgcParser._parse_b_record(line)
+                flight.fixes.append(IgcParser._parse_b_record(line))
 
             if line.startswith("H"):
                 pass
@@ -109,7 +116,7 @@ class IgcParser:
         return result
 
     @staticmethod
-    def parse_k_record(line: str) -> KRecord:
+    def parse_k_record(line: str) -> Optional[KRecord]:
         if match := re.match(RE_K, line, flags=re.IGNORECASE):
             return KRecord(
                 time=datetime.time(
@@ -119,6 +126,27 @@ class IgcParser:
                 )
             )
 
+        return None
+
     @staticmethod
     def _parse_header(line: str):
+        def _parse_date_header() -> Tuple[datetime.date, Optional[int]]:
+            if match := re.match(RE_HFDTE, line, flags=re.IGNORECASE):
+                century: str = "19" if match[3][0] in ("8", "9") else "20"
+
+                num_flight: Optional[int] = int(match[4]) if match[4] else None
+                return datetime.date(year=int(century + match[3]), month=int(match[2]), day=int(match[1])), num_flight
+
+        header_type: str = line[2:5]
+
+        if header_type == "DTE":
+            date, num_flight = _parse_date_header()
+
+        if header_type == "PLT":
+            pass
+
+        pass
+
+    @staticmethod
+    def _parse_task_line(line):
         pass

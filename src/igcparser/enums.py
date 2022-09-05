@@ -1,5 +1,6 @@
 import datetime
 from dataclasses import dataclass
+from dataclasses import field
 from typing import List
 from typing import Optional
 
@@ -67,4 +68,4 @@ class Task:
 
 @dataclass
 class Flight:
-    pass
+    fixes: List[BRecord] = field(default_factory=list)

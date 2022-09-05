@@ -46,17 +46,18 @@ class IgcParser:
                 flight.logger_id = a_record.logger_id
                 flight.logger_manufacturer = a_record.logger_manufacturer
 
-            if line.startswith("C"):
-                IgcParser._parse_task_line(line, flight)
-
-            if line.startswith("H"):
-                IgcParser._parse_header(line)
-
             if line.startswith("B"):
                 flight.fixes.append(IgcParser._parse_b_record(line, fix_extension))
 
-            if line.startswith("K"):
-                IgcParser.parse_k_record(line, data_extensions)
+            if line.startswith("C"):
+                IgcParser._parse_task_line(line, flight)
+
+            if line.startswith("G"):
+                # intentionally ignored, because it is not possible to validate file without external .dll
+                pass
+
+            if line.startswith("H"):
+                IgcParser._parse_header(line)
 
             if line.startswith("I"):
                 fix_extension = IgcParser._parse_ij_record(line)
@@ -64,7 +65,10 @@ class IgcParser:
             if line.startswith("J"):
                 data_extensions = IgcParser._parse_ij_record(line)
 
-        return Flight()
+            if line.startswith("K"):
+                flight.data_records.append(IgcParser.parse_k_record(line, data_extensions))
+
+        return flight
 
     @staticmethod
     def _parse_latitude(dd: str, mm: str, mmm: str, ns: str) -> float:

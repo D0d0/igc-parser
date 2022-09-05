@@ -70,4 +70,5 @@ class Flight:
     logger_manufacturer: Optional[str] = None
     logger_id: Optional[str] = None
     task: Optional[Task] = None
+    data_records: List[KRecord] = field(default_factory=list)
     fixes: List[BRecord] = field(default_factory=list)

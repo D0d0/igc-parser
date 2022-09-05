@@ -29,7 +29,7 @@ class ParserMethodCase(unittest.TestCase):
         line: str = "AXSX001 SKYTRAXX V1.60 SN:2726125672"
         record: ARecord = IgcParser._parse_a_record(line)
         self.assertIsNone(record.num_flight)
-        self.assertEqual(record.manufacturer, "XSX")
+        self.assertEqual(record.logger_manufacturer, "XSX")
         self.assertIsNone(record.logger_id)
         self.assertEqual(record.additional_data, "001 SKYTRAXX V1.60 SN:2726125672")
 

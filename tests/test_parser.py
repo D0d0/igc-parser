@@ -55,6 +55,17 @@ class ParserMethodCase(unittest.TestCase):
         self.assertEqual(record_extensions[0].length, 9)
         self.assertEqual(record_extensions[1].length, 14)
 
+        line: str = "I053638FXA3941ENL4246GSP4749TRT5052MOP"
+        record_extensions: List[RecordExtension] = IgcParser._parse_ij_record(line)
+        self.assertEqual(len(record_extensions), 5)
+
+        self.assertEqual(record_extensions[0].code, "FXA")
+        self.assertEqual(record_extensions[1].code, "ENL")
+        self.assertEqual(record_extensions[2].code, "GSP")
+        self.assertEqual(record_extensions[3].code, "TRT")
+        self.assertEqual(record_extensions[4].code, "MOP")
+        print(record_extensions)
+
     def test_task_line_parser(self):
         line: str = "C030922095226030922000102"
         flight: Flight = Flight()

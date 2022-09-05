@@ -37,6 +37,8 @@ class IgcParser:
     @staticmethod
     def _parse_lines(lines: List[str]) -> Flight:
         flight: Flight = Flight()
+        data_extensions: List[RecordExtension] = []
+        fix_extension: List[RecordExtension] = []
 
         for line in lines:
             if line.startswith("C"):
@@ -49,13 +51,16 @@ class IgcParser:
                 IgcParser._parse_a_record(line)
 
             if line.startswith("B"):
-                flight.fixes.append(IgcParser._parse_b_record(line))
+                flight.fixes.append(IgcParser._parse_b_record(line, fix_extension))
 
-            if line.startswith("H"):
-                pass
+            if line.startswith("K"):
+                IgcParser.parse_k_record(line, data_extensions)
 
-            if line.startswith("I") or line.startswith("J"):
-                print(IgcParser._parse_ij_record(line))
+            if line.startswith("I"):
+                fix_extension = IgcParser._parse_ij_record(line)
+
+            if line.startswith("J"):
+                data_extensions = IgcParser._parse_ij_record(line)
 
         return Flight()
 
@@ -72,7 +77,7 @@ class IgcParser:
         return -latitude_degrees if ew == "W" else latitude_degrees
 
     @staticmethod
-    def _parse_b_record(line: str) -> BRecord:
+    def _parse_b_record(line: str, fix_extensions: List[RecordExtension]) -> BRecord:
         if match := re.match(RE_B, line, flags=re.IGNORECASE):
             return BRecord(
                 time=datetime.time(
@@ -85,6 +90,10 @@ class IgcParser:
                 valid=match.group(12) == "A",
                 pressure_altitude=None if match.group(13) == "0000" else int(match.group(13)),
                 gps_altitude=None if match.group(14) == "0000" else int(match.group(14)),
+                extensions={
+                    extension.code: line[extension.start : extension.start + extension.length]
+                    for extension in fix_extensions
+                },
             )
 
         raise Exception(f"Invalid B record at line: {line}")
@@ -130,17 +139,21 @@ class IgcParser:
         return result
 
     @staticmethod
-    def parse_k_record(line: str) -> Optional[KRecord]:
+    def parse_k_record(line: str, data_extensions: List[RecordExtension]) -> KRecord:
         if match := re.match(RE_K, line, flags=re.IGNORECASE):
             return KRecord(
                 time=datetime.time(
                     hour=int(match.group(1)),
                     minute=int(match.group(2)),
                     second=int(match.group(3)),
-                )
+                ),
+                extensions={
+                    extension.code: line[extension.start : extension.start + extension.length]
+                    for extension in data_extensions
+                },
             )
 
-        return None
+        raise Exception(f"Failed to parse KRecord line: {line}")
 
     @staticmethod
     def _parse_header(line: str):

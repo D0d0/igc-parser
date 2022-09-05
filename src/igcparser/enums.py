@@ -1,6 +1,7 @@
 import datetime
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Dict
 from typing import List
 from typing import Optional
 
@@ -20,10 +21,9 @@ class BRecord:
     latitude: float
     longitude: float
     valid: bool
+    extensions: Dict[str, str]
     pressure_altitude: Optional[int] = None
     gps_altitude: Optional[int] = None
-
-    extensions: Optional[RecordExtension] = None
 
     fix_accuracy: Optional[int] = None
 
@@ -41,7 +41,7 @@ class ARecord:
 @dataclass
 class KRecord:
     time: datetime.time
-    code: List[str]
+    extensions: Dict[str, str]
 
 
 @dataclass

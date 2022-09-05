@@ -35,13 +35,14 @@ class ParserMethodCase(unittest.TestCase):
 
     def test_b_record(self):
         line: str = "B1117344818577N01806797EA007590085500210"
-        record: BRecord = IgcParser._parse_b_record(line)
+        record: BRecord = IgcParser._parse_b_record(line, [])
         self.assertEqual(record.time, datetime.time(hour=11, minute=17, second=34))
         self.assertAlmostEqual(record.latitude, 48.309616, places=5)
         self.assertAlmostEqual(record.longitude, 18.113283, places=5)
         self.assertEqual(record.pressure_altitude, 759)
         self.assertEqual(record.gps_altitude, 855)
         self.assertTrue(record.valid)
+        self.assertEqual(record.extensions, {})
 
     def test_ij_record(self):
         line: str = "J020810WDI1115WVE"

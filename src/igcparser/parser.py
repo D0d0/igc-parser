@@ -12,6 +12,7 @@ from .enums import Flight
 from .enums import KRecord
 from .enums import RecordExtension
 from .enums import Task
+from .enums import TaskPoint
 from .regexes import RE_A
 from .regexes import RE_A_1
 from .regexes import RE_B
@@ -19,6 +20,7 @@ from .regexes import RE_HFDTE
 from .regexes import RE_IJ
 from .regexes import RE_K
 from .regexes import RE_TASK
+from .regexes import RE_TASKPOINT
 
 
 class IgcParser:
@@ -58,18 +60,28 @@ class IgcParser:
         return Flight()
 
     @staticmethod
+    def _parse_latitude(dd: str, mm: str, mmm: str, ns: str) -> float:
+        latitude_degrees: float = int(dd) + float(f"{mm}.{mmm}") / 60
+
+        return -latitude_degrees if ns == "S" else latitude_degrees
+
+    @staticmethod
+    def _parse_longitude(ddd: str, mm: str, mmm: str, ew: str) -> float:
+        latitude_degrees: float = int(ddd) + float(f"{mm}.{mmm}") / 60
+
+        return -latitude_degrees if ew == "W" else latitude_degrees
+
+    @staticmethod
     def _parse_b_record(line: str) -> Optional[BRecord]:
         if match := re.match(RE_B, line, flags=re.IGNORECASE):
-            latitude_degrees: float = int(match.group(4)) + (int(match.group(5)) + int(match.group(6)) / 100) / 60
-            longitude_degrees: float = int(match.group(8)) + (int(match.group(9)) + int(match.group(10)) / 100) / 60
             return BRecord(
                 time=datetime.time(
                     hour=int(match.group(1)),
                     minute=int(match.group(2)),
                     second=int(match.group(3)),
                 ),
-                latitude=-latitude_degrees if match.group(7) == "S" else latitude_degrees,
-                longitude=-longitude_degrees if match.group(11) == "W" else longitude_degrees,
+                latitude=IgcParser._parse_latitude(match.group(4), match.group(5), match.group(6), match.group(7)),
+                longitude=IgcParser._parse_longitude(match.group(8), match.group(9), match.group(10), match.group(11)),
                 valid=match.group(12) == "A",
                 pressure_altitude=None if match.group(13) == "0000" else int(match.group(13)),
                 gps_altitude=None if match.group(14) == "0000" else int(match.group(14)),
@@ -171,11 +183,18 @@ class IgcParser:
                 comment=match[12] or None,
             )
 
-        def _parse_task_line():
-            pass
+        def _parse_task_line() -> TaskPoint:
+            if match := re.match(RE_TASKPOINT, line, flags=re.IGNORECASE):
+                return TaskPoint(
+                    latitude=IgcParser._parse_latitude(match.group(1), match.group(2), match.group(3), match.group(4)),
+                    longitude=IgcParser._parse_longitude(
+                        match.group(5), match.group(6), match.group(7), match.group(8)
+                    ),
+                    name=match.group(9) if match.group(9) else None,
+                )
 
         if flight.task is None:
             if match := re.match(RE_TASK, line, flags=re.IGNORECASE):
                 flight.task = _parse_task()
         else:
-            pass
+            flight.task.points.append(_parse_task_line())

@@ -7,6 +7,7 @@ from igcparser import IgcParser
 from igcparser.enums import BRecord
 from igcparser.enums import Flight
 from igcparser.enums import RecordExtension
+from igcparser.enums import TaskPoint
 
 
 class ParserMethodCase(unittest.TestCase):
@@ -64,3 +65,13 @@ class ParserMethodCase(unittest.TestCase):
         self.assertEqual(flight.task.num_turnpoints, 2)
         self.assertEqual(flight.task.points, [])
         self.assertEqual(flight.task.comment, None)
+
+        line: str = "C4757600N01811200E199NOVE ZAMKY"
+        IgcParser._parse_task_line(line, flight)
+        self.assertIsNotNone(flight.task)
+        self.assertEqual(len(flight.task.points), 1)
+
+        first_turnpoint: TaskPoint = flight.task.points[0]
+        self.assertEqual(first_turnpoint.name, "199NOVE ZAMKY")
+        self.assertEqual(first_turnpoint.latitude, 47.96)
+        self.assertAlmostEqual(first_turnpoint.longitude, 18.186, places=2)

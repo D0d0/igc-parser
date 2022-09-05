@@ -46,9 +46,9 @@ class KRecord:
 
 @dataclass
 class TaskPoint:
-    latitude: int
-    longitude: int
-    name: str
+    latitude: float
+    longitude: float
+    name: Optional[str]
 
 
 @dataclass

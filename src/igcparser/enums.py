@@ -56,7 +56,7 @@ class Task:
     declaration_date: datetime.date
     declaration_time: datetime.time
 
-    flight_date: datetime.date
+    flight_date: Optional[datetime.date]
 
     num_turnpoints: int
     comment: Optional[str]

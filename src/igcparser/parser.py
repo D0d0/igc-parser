@@ -72,7 +72,7 @@ class IgcParser:
         return -latitude_degrees if ew == "W" else latitude_degrees
 
     @staticmethod
-    def _parse_b_record(line: str) -> Optional[BRecord]:
+    def _parse_b_record(line: str) -> BRecord:
         if match := re.match(RE_B, line, flags=re.IGNORECASE):
             return BRecord(
                 time=datetime.time(
@@ -87,7 +87,7 @@ class IgcParser:
                 gps_altitude=None if match.group(14) == "0000" else int(match.group(14)),
             )
 
-        return None
+        raise Exception(f"Invalid B record at line: {line}")
 
     @staticmethod
     def _parse_a_record(line: str) -> Optional[ARecord]:
@@ -151,6 +151,8 @@ class IgcParser:
                 num_flight: Optional[int] = int(match[4]) if match[4] else None
                 return datetime.date(year=int(century + match[3]), month=int(match[2]), day=int(match[1])), num_flight
 
+            raise Exception(f"Failed to parse date header: {line}")
+
         header_type: str = line[2:5]
 
         if header_type == "DTE":
@@ -164,24 +166,31 @@ class IgcParser:
     @staticmethod
     def _parse_task_line(line: str, flight: Flight) -> None:
         def _parse_task() -> Task:
-            century: str = "19" if match[3][0] in ("8", "9") else "20"
+            if match := re.match(RE_TASK, line, flags=re.IGNORECASE):
+                century: str = "19" if match.group(3)[0] in ("8", "9") else "20"
 
-            flight_date: Optional[datetime.date] = None
-            if match[7] != "00" or match[8] != "00" or match[9] != "00":
-                flight_date = datetime.date(
-                    year=int(("19" if match[9][0] in ("8", "9") else "20") + match[9]),
-                    month=int(match[8]),
-                    day=int(match[7]),
+                flight_date: Optional[datetime.date] = None
+                if match.group(7) != "00" or match.group(8) != "00" or match.group(9) != "00":
+                    flight_date = datetime.date(
+                        year=int(("19" if match.group(9)[0] in ("8", "9") else "20") + match.group(9)),
+                        month=int(match.group(8)),
+                        day=int(match.group(7)),
+                    )
+
+                return Task(
+                    declaration_date=datetime.date(
+                        year=int(century + match.group(3)), month=int(match.group(2)), day=int(match.group(1))
+                    ),
+                    declaration_time=datetime.time(
+                        hour=int(match.group(4)), minute=int(match.group(5)), second=int(match.group(6))
+                    ),
+                    flight_date=flight_date,
+                    task_number=int(match[10]) if match[10] != "0000" else None,
+                    num_turnpoints=int(match[11]),
+                    comment=match[12] or None,
                 )
 
-            return Task(
-                declaration_date=datetime.date(year=int(century + match[3]), month=int(match[2]), day=int(match[1])),
-                declaration_time=datetime.time(hour=int(match[4]), minute=int(match[5]), second=int(match[6])),
-                flight_date=flight_date,
-                task_number=int(match[10]) if match[10] != "0000" else None,
-                num_turnpoints=int(match[11]),
-                comment=match[12] or None,
-            )
+            raise Exception(f"Failed to parse header task line: {line}")
 
         def _parse_task_line() -> TaskPoint:
             if match := re.match(RE_TASKPOINT, line, flags=re.IGNORECASE):
@@ -193,8 +202,9 @@ class IgcParser:
                     name=match.group(9) if match.group(9) else None,
                 )
 
+            raise Exception(f"Failed to parse task point line: {line}")
+
         if flight.task is None:
-            if match := re.match(RE_TASK, line, flags=re.IGNORECASE):
-                flight.task = _parse_task()
+            flight.task = _parse_task()
         else:
             flight.task.points.append(_parse_task_line())
